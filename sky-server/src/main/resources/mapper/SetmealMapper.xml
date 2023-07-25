@@ -10,6 +10,16 @@
         values (#{categoryId}, #{name}, #{price}, #{status}, #{description}, #{image}, #{createTime}, #{updateTime},
                 #{createUser}, #{updateUser})
     </insert>
+
+    <delete id="deleteBatchByIds">
+        delete
+        from setmeal
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
     <select id="pageQuery" resultType="com.sky.vo.SetmealVO">
         SELECT s.id,
                s.category_id,
