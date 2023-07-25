@@ -165,4 +165,22 @@ public class DishServiceImpl implements DishService
             dishFlavorMapper.insertBatch(flavors);
         }
     }
+
+    /**
+     * 根据分类id查询菜品
+     * @param categoryId
+     * @return
+     */
+    @Override
+    public List<Dish> listDishByCategoryId(Long categoryId)
+    {
+        Dish dish = new Dish();
+        dish.setCategoryId(categoryId);
+        // 起售中的菜品
+        dish.setStatus(StatusConstant.ENABLE);
+
+        List<Dish> dishList = dishMapper.selectByCategoryId(dish);
+
+        return dishList;
+    }
 }
