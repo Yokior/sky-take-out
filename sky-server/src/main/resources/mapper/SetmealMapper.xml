@@ -11,6 +11,37 @@
                 #{createUser}, #{updateUser})
     </insert>
 
+    <update id="update">
+        update setmeal
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="categoryId != null">
+                category_id = #{categoryId},
+            </if>
+            <if test="price != null">
+                price = #{price},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="image != null">
+                image = #{image},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="updateUser != null">
+                update_user = #{updateUser},
+            </if>
+        </set>
+            where id = #{id}
+    </update>
+
     <delete id="deleteBatchByIds">
         delete
         from setmeal
@@ -22,17 +53,17 @@
 
     <select id="pageQuery" resultType="com.sky.vo.SetmealVO">
         SELECT s.id,
-               s.category_id,
-               s.name,
-               s.price,
-               s.status,
-               s.description,
-               s.image,
-               s.update_time,
-               c.name AS categoryName
+        s.category_id,
+        s.name,
+        s.price,
+        s.status,
+        s.description,
+        s.image,
+        s.update_time,
+        c.name AS categoryName
         FROM setmeal s
-                 LEFT JOIN category c
-                           ON s.category_id = c.id
+        LEFT JOIN category c
+        ON s.category_id = c.id
         <where>
             <if test="name != null">
                 and s.name like concat('%',#{name},'%')
