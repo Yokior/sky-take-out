@@ -156,4 +156,19 @@ public class SetmealServiceImpl implements SetmealService
 
         return setmealVO;
     }
+
+    /**
+     * 起售/停售套餐
+     * @param status
+     * @param id
+     */
+    @Override
+    public void startOrStop(Integer status, Long id)
+    {
+        Setmeal setmeal = new Setmeal();
+        setmeal.setId(id);
+        setmeal.setStatus(status);
+
+        setmealMapper.update(setmeal);
+    }
 }
