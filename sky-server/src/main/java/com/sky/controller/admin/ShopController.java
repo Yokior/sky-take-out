@@ -29,7 +29,7 @@ public class ShopController
     }
 
 
-    @GetMapping
+    @GetMapping("/status")
     @ApiOperation("获取店铺营业状态")
     public Result<Integer> getStatus()
     {
