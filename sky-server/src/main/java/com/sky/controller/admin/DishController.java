@@ -6,6 +6,7 @@ import com.sky.entity.Dish;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.DishService;
+import com.sky.utils.RedisCache;
 import com.sky.vo.DishVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -25,6 +26,9 @@ public class DishController
     @Autowired
     private DishService dishService;
 
+    @Autowired
+    private RedisCache redisCache;
+
 
     @PostMapping
     @ApiOperation("新增菜品")
@@ -33,6 +37,10 @@ public class DishController
         log.info("新增菜品:{}",dishDTO);
 
         dishService.saveWithFlavor(dishDTO);
+
+        // 清除缓存
+        String key = "dish_" + dishDTO.getCategoryId();
+        redisCache.deleteObject(key);
 
         return Result.success();
     }
