@@ -133,4 +133,12 @@ public class ShoppingCartServiceImpl implements ShoppingCartService
             }
         }
     }
+
+    @Override
+    public void cleanShoppingCart()
+    {
+        Long userId = BaseContext.getCurrentId();
+
+        shoppingCartMapper.deleteByUserId(userId);
+    }
 }
