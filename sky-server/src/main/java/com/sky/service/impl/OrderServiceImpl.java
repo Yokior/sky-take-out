@@ -235,6 +235,33 @@ public class OrderServiceImpl implements OrderService
     }
 
     /**
+     * 再来一单
+     * @param id
+     */
+    @Override
+    public void repetition(Long id)
+    {
+        List<OrderDetail> orderDetailList = orderDetailMapper.selectByOrderId(id);
+
+        Long userId = BaseContext.getCurrentId();
+
+        // 转换为ShoppingCart对象
+        List<ShoppingCart> shoppingCartList = orderDetailList.stream()
+                .map(orderDetail ->
+                {
+                    ShoppingCart shoppingCart = new ShoppingCart();
+                    BeanUtils.copyProperties(orderDetail, shoppingCart, "id");
+                    shoppingCart.setUserId(userId);
+                    shoppingCart.setCreateTime(LocalDateTime.now());
+
+                    return shoppingCart;
+                })
+                .collect(Collectors.toList());
+
+        shoppingCartMapper.insertBatch(shoppingCartList);
+    }
+
+    /**
      * 订单支付
      *
      * @param ordersPaymentDTO
