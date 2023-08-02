@@ -3,6 +3,7 @@ package com.sky.controller.user;
 import com.alibaba.druid.support.json.JSONUtils;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
+import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
 import com.sky.service.ShoppingCartService;
@@ -74,6 +75,15 @@ public class OrderController
                 .packageStr("lalala")
                 .build();
         return Result.success(paymentVO);
+    }
+
+    @GetMapping("/historyOrders")
+    @ApiOperation("查询历史订单")
+    public Result<PageResult> historyOrders(Integer page, Integer pageSize, Integer status)
+    {
+        log.info("查询历史订单:{},{},{}",page,pageSize,status);
+        PageResult pageResult = orderService.historyOrders(page,pageSize,status);
+        return Result.success(pageResult);
     }
 
 }
