@@ -54,6 +54,7 @@ public class OrderServiceImpl implements OrderService
 
     /**
      * 用户下单
+     *
      * @param ordersSubmitDTO
      * @return
      */
@@ -79,7 +80,7 @@ public class OrderServiceImpl implements OrderService
         }
         // 订单表插入1条数据
         Orders orders = new Orders();
-        BeanUtils.copyProperties(ordersSubmitDTO,orders);
+        BeanUtils.copyProperties(ordersSubmitDTO, orders);
         orders.setOrderTime(LocalDateTime.now());
         orders.setPayStatus(Orders.UN_PAID);
         orders.setStatus(Orders.PENDING_PAYMENT);
@@ -124,7 +125,8 @@ public class OrderServiceImpl implements OrderService
      *
      * @param ordersPaymentDTO
      */
-    public void paySuccess(OrdersPaymentDTO ordersPaymentDTO) {
+    public void paySuccess(OrdersPaymentDTO ordersPaymentDTO)
+    {
 
         // 根据订单号查询订单
         String orderNumber = ordersPaymentDTO.getOrderNumber();
@@ -143,7 +145,7 @@ public class OrderServiceImpl implements OrderService
 
     public PageResult historyOrders(Integer page, Integer pageSize, Integer status)
     {
-        PageHelper.startPage(page,pageSize);
+        PageHelper.startPage(page, pageSize);
 
         OrdersPageQueryDTO ordersPageQueryDTO = OrdersPageQueryDTO.builder()
                 .userId(BaseContext.getCurrentId())
@@ -166,11 +168,12 @@ public class OrderServiceImpl implements OrderService
 
         // 封装PageResult
 
-        return new PageResult(ordersPage.getTotal(),orderVOList);
+        return new PageResult(ordersPage.getTotal(), orderVOList);
     }
 
     /**
      * 查询订单详情
+     *
      * @param id
      * @return
      */
@@ -181,10 +184,54 @@ public class OrderServiceImpl implements OrderService
         List<OrderDetail> orderDetailList = orderDetailMapper.selectByOrderId(id);
 
         OrderVO orderVO = new OrderVO();
-        BeanUtils.copyProperties(orders,orderVO);
+        BeanUtils.copyProperties(orders, orderVO);
         orderVO.setOrderDetailList(orderDetailList);
 
+        // 查询地址信息
+        AddressBook addressBook = addressBookMapper.getById(orderVO.getAddressBookId());
+        orderVO.setAddress(addressBook.getProvinceName() + addressBook.getCityName() + addressBook.getDistrictName());
+
         return orderVO;
+    }
+
+    /**
+     * 取消订单
+     *
+     * @param id
+     */
+    @Override
+    public void cancelOrder(Long id)
+    {
+        // 根据id查询订单
+        Orders ordersDB = orderMapper.selectById(id);
+
+        // 校验订单是否存在
+        if (ordersDB == null)
+        {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        //订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
+        if (ordersDB.getStatus() > 2)
+        {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        Orders orders = new Orders();
+        orders.setId(id);
+
+        // 订单处于待接单状态下取消，需要进行退款
+        if (ordersDB.getStatus().equals(Orders.TO_BE_CONFIRMED))
+        {
+            //支付状态修改为 退款
+            orders.setPayStatus(Orders.REFUND);
+        }
+
+        // 更新订单状态、取消原因、取消时间
+        orders.setStatus(Orders.CANCELLED);
+        orders.setCancelReason("用户取消");
+        orders.setCancelTime(LocalDateTime.now());
+        orderMapper.update(orders);
     }
 
     /**
