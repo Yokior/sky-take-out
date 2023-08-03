@@ -316,6 +316,35 @@ public class OrderServiceImpl implements OrderService
         return orderStatisticsVO;
     }
 
+    /**
+     * 查询订单详情
+     * @param id
+     * @return
+     */
+    @Override
+    public OrderVO details(Long id)
+    {
+        Orders orders = orderMapper.selectById(id);
+        if (orders == null)
+        {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        OrderVO orderVO = new OrderVO();
+        BeanUtils.copyProperties(orders,orderVO);
+        // 简述
+        String orderDishesStr = getOrderDishesStr(orders);
+        orderVO.setOrderDishes(orderDishesStr);
+        // 查询地址信息
+        AddressBook addressBook = addressBookMapper.getById(orderVO.getAddressBookId());
+        orderVO.setAddress(addressBook.getProvinceName() + addressBook.getCityName() + addressBook.getDistrictName());
+        // 菜品详情信息
+        List<OrderDetail> orderDetailList = orderDetailMapper.selectByOrderId(id);
+        orderVO.setOrderDetailList(orderDetailList);
+
+        return orderVO;
+    }
+
 
     /**
      * 根据订单id获取菜品信息字符串
