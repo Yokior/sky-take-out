@@ -19,6 +19,7 @@ import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class OrderServiceImpl implements OrderService
 {
 
@@ -290,11 +292,12 @@ public class OrderServiceImpl implements OrderService
                 .collect(Collectors.toList());
 
 
-        return new PageResult(ordersPage.getTotal(),orderVOList);
+        return new PageResult(ordersPage.getTotal(), orderVOList);
     }
 
     /**
      * 统计各个状态订单数量
+     *
      * @return
      */
     @Override
@@ -315,6 +318,7 @@ public class OrderServiceImpl implements OrderService
 
     /**
      * 查询订单详情
+     *
      * @param id
      * @return
      */
@@ -328,7 +332,7 @@ public class OrderServiceImpl implements OrderService
         }
 
         OrderVO orderVO = new OrderVO();
-        BeanUtils.copyProperties(orders,orderVO);
+        BeanUtils.copyProperties(orders, orderVO);
         // 简述
         String orderDishesStr = getOrderDishesStr(orders);
         orderVO.setOrderDishes(orderDishesStr);
@@ -344,6 +348,7 @@ public class OrderServiceImpl implements OrderService
 
     /**
      * 接单
+     *
      * @param ordersConfirmDTO
      */
     @Override
@@ -353,6 +358,40 @@ public class OrderServiceImpl implements OrderService
                 .id(ordersConfirmDTO.getId())
                 .status(Orders.CONFIRMED)
                 .build();
+        orderMapper.update(orders);
+    }
+
+    /**
+     * 拒单
+     *
+     * @param ordersRejectionDTO
+     */
+    @Override
+    public void rejection(OrdersRejectionDTO ordersRejectionDTO)
+    {
+        Long orderId = ordersRejectionDTO.getId();
+        Orders ordersDB = orderMapper.selectById(orderId);
+        // 只有处于待接单状态才能拒单
+        if (ordersDB == null || !ordersDB.getStatus().equals(Orders.TO_BE_CONFIRMED))
+        {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        //支付状态
+        Integer payStatus = ordersDB.getPayStatus();
+        if (payStatus == Orders.PAID) {
+            //用户已支付，需要退款
+            log.info("申请退款");
+        }
+
+        // 修改订单状态
+        // 拒单需要退款，根据订单id更新订单状态、拒单原因、取消时间
+        Orders orders = new Orders();
+        orders.setId(orderId);
+        orders.setStatus(Orders.CANCELLED);
+        orders.setRejectionReason(ordersRejectionDTO.getRejectionReason());
+        orders.setCancelTime(LocalDateTime.now());
+
         orderMapper.update(orders);
     }
 
