@@ -19,6 +19,7 @@ import com.sky.service.AddressBookService;
 import com.sky.service.OrderService;
 import com.sky.service.ShoppingCartService;
 import com.sky.vo.OrderPaymentVO;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
 import org.springframework.beans.BeanUtils;
@@ -293,6 +294,26 @@ public class OrderServiceImpl implements OrderService
 
 
         return new PageResult(ordersPage.getTotal(),orderVOList);
+    }
+
+    /**
+     * 统计各个状态订单数量
+     * @return
+     */
+    @Override
+    public OrderStatisticsVO statistics()
+    {
+        // 待接单
+        Integer toBeConfirmed = orderMapper.selectCountByStatus(Orders.TO_BE_CONFIRMED);
+        // 待派送
+        Integer confirmed = orderMapper.selectCountByStatus(Orders.CONFIRMED);
+        // 派送中
+        Integer deliveryInProgress = orderMapper.selectCountByStatus(Orders.DELIVERY_IN_PROGRESS);
+
+        // 封装vo
+        OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO(toBeConfirmed, confirmed, deliveryInProgress);
+
+        return orderStatisticsVO;
     }
 
 
