@@ -424,6 +424,31 @@ public class OrderServiceImpl implements OrderService
         orderMapper.update(orders);
     }
 
+    /**
+     * 派送订单
+     * @param id
+     */
+    @Override
+    public void delivery(Long id)
+    {
+        Orders ordersDB = orderMapper.selectById(id);
+
+        // 只有状态为待派送的才可以派送
+        if (ordersDB == null || !ordersDB.getStatus().equals(Orders.CONFIRMED))
+        {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        // 更新信息
+        Orders orders = Orders.builder()
+                .id(id)
+                .status(Orders.DELIVERY_IN_PROGRESS)
+                .build();
+
+        orderMapper.update(orders);
+
+    }
+
 
     /**
      * 根据订单id获取菜品信息字符串
