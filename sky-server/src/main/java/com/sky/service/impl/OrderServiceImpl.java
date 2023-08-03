@@ -379,7 +379,8 @@ public class OrderServiceImpl implements OrderService
 
         //支付状态
         Integer payStatus = ordersDB.getPayStatus();
-        if (payStatus == Orders.PAID) {
+        if (payStatus == Orders.PAID)
+        {
             //用户已支付，需要退款
             log.info("申请退款");
         }
@@ -390,6 +391,34 @@ public class OrderServiceImpl implements OrderService
         orders.setId(orderId);
         orders.setStatus(Orders.CANCELLED);
         orders.setRejectionReason(ordersRejectionDTO.getRejectionReason());
+        orders.setCancelTime(LocalDateTime.now());
+
+        orderMapper.update(orders);
+    }
+
+    /**
+     * 取消订单
+     *
+     * @param ordersCancelDTO
+     */
+    @Override
+    public void cancel(OrdersCancelDTO ordersCancelDTO)
+    {
+        Long orderId = ordersCancelDTO.getId();
+
+        Orders ordersDB = orderMapper.selectById(orderId);
+        //支付状态
+        Integer payStatus = ordersDB.getPayStatus();
+        if (payStatus == 1)
+        {
+            log.info("申请退款");
+        }
+
+        // 管理端取消订单需要退款，根据订单id更新订单状态、取消原因、取消时间
+        Orders orders = new Orders();
+        orders.setId(orderId);
+        orders.setStatus(Orders.CANCELLED);
+        orders.setCancelReason(ordersCancelDTO.getCancelReason());
         orders.setCancelTime(LocalDateTime.now());
 
         orderMapper.update(orders);
