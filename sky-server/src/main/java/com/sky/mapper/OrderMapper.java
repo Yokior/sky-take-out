@@ -24,7 +24,7 @@ public interface OrderMapper
      * @param orderNumber
      */
     @Select("select * from orders where number = #{orderNumber}")
-    Orders getByNumber(String orderNumber);
+    Orders selectByNumber(String orderNumber);
 
     /**
      * 修改订单信息
