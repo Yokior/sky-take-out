@@ -493,6 +493,31 @@ public class OrderServiceImpl implements OrderService
         orderMapper.update(orders);
     }
 
+    /**
+     * 催单
+     * @param id
+     */
+    @Override
+    public void reminder(Long id)
+    {
+        // 根据id查询订单
+        Orders ordersDB = orderMapper.selectById(id);
+
+        // 校验订单是否存在
+        if (ordersDB == null)
+        {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        HashMap hashMap = new HashMap();
+        hashMap.put("type",2);
+        hashMap.put("orderId",ordersDB.getId());
+        hashMap.put("content","订单号：" + ordersDB.getNumber());
+
+        String json = JSON.toJSONString(hashMap);
+        webSocketServer.sendToAllClient(json);
+    }
+
 
     /**
      * 根据订单id获取菜品信息字符串
