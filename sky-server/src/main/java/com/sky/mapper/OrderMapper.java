@@ -69,4 +69,10 @@ public interface OrderMapper
      * @return
      */
     Double sumByMap(HashMap hashMap);
+
+    /**
+     * 根据map查询数量
+     * @return
+     */
+    Integer countByMap(HashMap hashMap);
 }
