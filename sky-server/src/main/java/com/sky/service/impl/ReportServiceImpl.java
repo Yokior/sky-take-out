@@ -1,10 +1,12 @@
 package com.sky.service.impl;
 
+import com.sky.dto.GoodsSalesDTO;
 import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.OrderReportVO;
+import com.sky.vo.SalesTop10ReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import org.apache.commons.lang3.StringUtils;
@@ -17,6 +19,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ReportServiceImpl implements ReportService
@@ -135,6 +138,7 @@ public class ReportServiceImpl implements ReportService
 
     /**
      * 订单数据统计
+     *
      * @param begin
      * @param end
      * @return
@@ -180,13 +184,13 @@ public class ReportServiceImpl implements ReportService
         Double orderCompletionRate = 0.0;
         if (totalOrderCount != 0)
         {
-           orderCompletionRate = validOrderCount.doubleValue() / totalOrderCount;
+            orderCompletionRate = validOrderCount.doubleValue() / totalOrderCount;
         }
 
         return OrderReportVO.builder()
-                .dateList(StringUtils.join(dateArrayList,","))
-                .orderCountList(StringUtils.join(orderCountList,","))
-                .validOrderCountList(StringUtils.join(validOrderCountList,","))
+                .dateList(StringUtils.join(dateArrayList, ","))
+                .orderCountList(StringUtils.join(orderCountList, ","))
+                .validOrderCountList(StringUtils.join(validOrderCountList, ","))
                 .totalOrderCount(totalOrderCount)
                 .validOrderCount(validOrderCount)
                 .orderCompletionRate(orderCompletionRate)
@@ -194,18 +198,48 @@ public class ReportServiceImpl implements ReportService
     }
 
     /**
+     * 销量排名Top10
+     *
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Override
+    public SalesTop10ReportVO getSalesTop10(LocalDate begin, LocalDate end)
+    {
+        LocalDateTime beginTime = LocalDateTime.of(begin, LocalTime.MIN);
+        LocalDateTime endTime = LocalDateTime.of(end, LocalTime.MAX);
+
+        List<GoodsSalesDTO> goodsSalesDTOList = orderMapper.getSalesTop10(beginTime,endTime);
+
+        List<String> stringList = goodsSalesDTOList.stream()
+                .map(GoodsSalesDTO::getName)
+                .collect(Collectors.toList());
+
+        List<Integer> integerList = goodsSalesDTOList.stream()
+                .map(GoodsSalesDTO::getNumber)
+                .collect(Collectors.toList());
+
+        return SalesTop10ReportVO.builder()
+                .nameList(StringUtils.join(stringList,","))
+                .numberList(StringUtils.join(integerList,","))
+                .build();
+    }
+
+    /**
      * 根据条件统计订单数量
+     *
      * @param begin
      * @param end
      * @param status
      * @return
      */
-    private Integer getOrderCountByMap(LocalDateTime begin,LocalDateTime end,Integer status)
+    private Integer getOrderCountByMap(LocalDateTime begin, LocalDateTime end, Integer status)
     {
         HashMap hashMap = new HashMap();
-        hashMap.put("begin",begin);
-        hashMap.put("end",end);
-        hashMap.put("status",status);
+        hashMap.put("begin", begin);
+        hashMap.put("end", end);
+        hashMap.put("status", status);
 
         Integer count = orderMapper.countByMap(hashMap);
         return count;
