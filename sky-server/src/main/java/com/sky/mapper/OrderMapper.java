@@ -11,6 +11,7 @@ import org.apache.ibatis.annotations.Select;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface OrderMapper
@@ -69,13 +70,13 @@ public interface OrderMapper
      * @param hashMap
      * @return
      */
-    Double sumByMap(HashMap hashMap);
+    Double sumByMap(Map hashMap);
 
     /**
      * 根据map查询数量
      * @return
      */
-    Integer countByMap(HashMap hashMap);
+    Integer countByMap(Map hashMap);
 
     /**
      * 统计指定时间销量前10
